@@ -9,6 +9,13 @@ from behave.formatter import ansi_escapes
 from behave.model_describe import ModelDescriptor
 from behave.textutil import indent, make_indentation
 
+import six
+if six.PY2:
+    # -- USE: Python3 backport for better unicode compatibility.
+    import traceback2 as traceback
+else:
+    import traceback
+
 
 def CDATA(text=None):
     # -- issue #70: remove_ansi_escapes(text)
@@ -30,16 +37,37 @@ class ElementTreeWithCDATA(ElementTree.ElementTree):
 
 
 if hasattr(ElementTree, '_serialize'):
-    def _serialize_xml(write, elem, encoding, qnames, namespaces,
-                       orig=ElementTree._serialize_xml):
+    # pylint: disable=protected-access
+    def _serialize_xml2(write, elem, encoding, qnames, namespaces,
+                        orig=ElementTree._serialize_xml):
         if elem.tag == '![CDATA[':
-            write("\n<%s%s]]>\n" % (elem.tag, elem.text.encode(encoding)))
+            write("\n<%s%s]]>\n" % \
+                  (elem.tag, elem.text.encode(encoding, "xmlcharrefreplace")))
             return
         return orig(write, elem, encoding, qnames, namespaces)
 
-    ElementTree._serialize_xml = ElementTree._serialize['xml'] = _serialize_xml
+    def _serialize_xml3(write, elem, qnames, namespaces,
+                        short_empty_elements=None,
+                        orig=ElementTree._serialize_xml):
+        if elem.tag == '![CDATA[':
+            write("\n<{tag}{text}]]>\n".format(
+                tag=elem.tag, text=elem.text))
+            return
+        if short_empty_elements:
+            # python >=3.3
+            return orig(write, elem, qnames, namespaces, short_empty_elements)
+        else:
+            # python <3.3
+            return orig(write, elem, qnames, namespaces)
 
+    if six.PY3:
+        ElementTree._serialize_xml = \
+            ElementTree._serialize['xml'] = _serialize_xml3
+    elif six.PY2:
+        ElementTree._serialize_xml = \
+            ElementTree._serialize['xml'] = _serialize_xml2
 
+    
 class FeatureReportData(object):
     """
     Provides value object to collect JUnit report data from a Feature.
