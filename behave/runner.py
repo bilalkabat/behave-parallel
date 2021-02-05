@@ -1347,9 +1347,9 @@ class Runner(ModelRunner):
     #         self.log_capture.abandon()
 
     def clean_buffer(self, buf):
-        return 
-        #for i in range(len(buf.buflist)):
-            #buf.buflist[i] = self.to_unicode(buf.buflist[i])
+        # return 
+        for i in range(len(buf.buflist)):
+            buf.buflist[i] = self.to_unicode(buf.buflist[i])
 
 
     @staticmethod
