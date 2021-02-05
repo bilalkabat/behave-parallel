@@ -1173,7 +1173,9 @@ class Runner(ModelRunner):
         report_string += "<system-out>\n<![CDATA[\n"
         report_string += "@scenario.begin\n"   
         writebuf.seek(0)
+        print("BUFFFFERRR ", writebuf)
         loglines = writebuf.readlines()
+        print("LOGLINEEESSS ", loglines)
         report_string += loglines[1]
         for step in cj.all_steps:
             report_string += " "*4
@@ -1347,9 +1349,9 @@ class Runner(ModelRunner):
     #         self.log_capture.abandon()
 
     def clean_buffer(self, buf):
-        # return 
-        for i in range(len(buf.buflist)):
-            buf.buflist[i] = self.to_unicode(buf.buflist[i])
+        return 
+        # for i in range(len(buf.buflist)):
+        #     buf.buflist[i] = self.to_unicode(buf.buflist[i])
 
 
     @staticmethod
